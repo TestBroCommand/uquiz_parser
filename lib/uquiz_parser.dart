@@ -1,13 +1,15 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
+
+import 'package:uquiz_parser/home.dart';
 import 'package:uquiz_parser/question.dart';
-import 'package:uquiz_parser/quiz_temp.dart';
+import 'package:uquiz_parser/quiz.dart';
 
 final dio = Dio();
 Future<List<String>> getIds() async {
-  File _file = File("input.txt");
-  List<String> _result = await _file.readAsLines();
-  return _result;
+  File file = File("input.txt");
+  List<String> result = await file.readAsLines();
+  return result;
 }
 
 Future<List<Question>> fetchQuestions(
@@ -39,7 +41,7 @@ Future<String> fetchQuizName(String quizId) async {
   Dio dio = Dio();
 
   try {
-    Response response = await dio.get('https://uquiz.com/Api/TrendingQuizzes');
+    Response response = await dio.get('https://uquiz.com/quiz/embed/hRaAfq');
     List<dynamic> quizzes = response.data;
     for (var quiz in quizzes) {
       if (quiz['QuizUrlId'] == quizId) {
@@ -53,16 +55,24 @@ Future<String> fetchQuizName(String quizId) async {
   }
 }
 
-Future<List<QuizTemp>> getQuizzes(List<String> ids) async {
-  List<QuizTemp> allQuizzes = [];
+Future<Home> fetchHome(String quizId) async {
+  Dio dio = Dio();
+  Response response = await dio.get('https://uquiz.com/quiz/embed/$quizId');
+  String html = response.data;
+  Home home = Home.fromJson(html, quizId);
+  return home;
+}
+
+Future<List<Quiz>> getQuizzes(List<String> ids) async {
+  List<Quiz> allQuizzes = [];
   Dio dio = Dio();
 
   for (String id in ids) {
     try {
       Response response = await dio.get("https://uquiz.com/api/quizstatus/$id");
       if (response.statusCode == 200) {
-        List<Question> current_quiz_questions = [];
-        String quizName = await fetchQuizName(id);
+        List<Question> currentQuizQuestions = [];
+        // String quizName = await fetchQuizName(id);
 
         final json = response.data as Map<String, dynamic>;
         final int versionId = json["QuizVersionId"];
@@ -73,17 +83,22 @@ Future<List<QuizTemp>> getQuizzes(List<String> ids) async {
         for (int i = 0; i < fullSets; i++) {
           List<Question> questions =
               await fetchQuestions(id, versionId, i * 3 + 1, 3);
-          current_quiz_questions.addAll(questions);
+          currentQuizQuestions.addAll(questions);
         }
-
+        final Home home = await fetchHome(id);
         if (remainder > 0) {
           List<Question> questions =
               await fetchQuestions(id, versionId, fullSets * 3 + 1, remainder);
-          current_quiz_questions.addAll(questions);
+          currentQuizQuestions.addAll(questions);
         }
-        QuizTemp current_quiz =
-            QuizTemp(quizName: quizName, questions: current_quiz_questions);
-        allQuizzes.add(current_quiz);
+        Quiz currentQuiz = Quiz(
+          questions: currentQuizQuestions,
+          results: [],
+          start: home,
+          home: home,
+        );
+
+        allQuizzes.add(currentQuiz);
       } else {
         print('Error: ${response.statusCode}');
       }
