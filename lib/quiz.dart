@@ -16,18 +16,20 @@ class Quiz {
   final List<int> mostFrequentNames;
   final List<int> results;
 
-  Quiz(this.results,
-      {required this.quizName,
-      required this.quizDescription,
-      required this.quizThumbnail,
-      required this.questionName,
-      required this.questionImage,
-      required this.questionAnswer,
-      required this.startName,
-      required this.startImage,
-      required this.startDescription,
-      required this.finalNames,
-      required this.finalImages,
-      required this.finalDescription,
-      required this.mostFrequentNames});
+  Quiz(
+    this.results, {
+    required this.quizName,
+    required this.quizDescription,
+    required this.quizThumbnail,
+    required this.questionName,
+    required this.questionImage,
+    required this.questionAnswer,
+    required this.startName,
+    required this.startImage,
+    required this.startDescription,
+    required this.finalNames,
+    required this.finalImages,
+    required this.finalDescription,
+    required this.mostFrequentNames,
+  });
 }
