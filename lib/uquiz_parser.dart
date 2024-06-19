@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:uquiz_parser/final.dart';
 
 import 'package:uquiz_parser/home.dart';
 import 'package:uquiz_parser/question.dart';
@@ -59,8 +60,44 @@ Future<Home> fetchHome(String quizId) async {
   Dio dio = Dio();
   Response response = await dio.get('https://uquiz.com/quiz/embed/$quizId');
   String html = response.data;
+  // print(html);
   Home home = Home.fromJson(html, quizId);
   return home;
+}
+
+Future<List<Final>> fetchFinals(String quizId, dynamic versionId) async {
+  Dio dio = Dio();
+  Response response =
+      await dio.get('https://uquiz.com/static/Quiz/sc/$quizId/$versionId');
+
+  if (response.statusCode == 200) {
+    final quizData = response.data as Map<String, dynamic>;
+
+    List<Final> finalsPages = [];
+    final Set<int> uniquePersonalityTypeIds = {};
+    for (var question in quizData['ScoreCardQuestions']) {
+      if (question['PersonalityAnswers'] != null) {
+        for (var answer in question['PersonalityAnswers']) {
+          uniquePersonalityTypeIds
+              .addAll(List<int>.from(answer['PersonalityTypeIds']));
+        }
+      }
+    }
+
+    for (var personalityTypeId in uniquePersonalityTypeIds) {
+      Response finalResponse = await dio.get(
+          'https://uquiz.com/Result/static/lite/nAaEe0/$versionId/personality/$personalityTypeId');
+
+      if (finalResponse.statusCode == 200) {
+        final finalData = finalResponse.data;
+        Final finalEntity = Final.fromJson(finalData);
+        finalsPages.add(finalEntity);
+      }
+    }
+    return finalsPages;
+  } else {
+    throw Exception('Failed to load quiz data');
+  }
 }
 
 Future<List<Quiz>> getQuizzes(List<String> ids) async {
@@ -85,15 +122,17 @@ Future<List<Quiz>> getQuizzes(List<String> ids) async {
               await fetchQuestions(id, versionId, i * 3 + 1, 3);
           currentQuizQuestions.addAll(questions);
         }
-        final Home home = await fetchHome(id);
+
         if (remainder > 0) {
           List<Question> questions =
               await fetchQuestions(id, versionId, fullSets * 3 + 1, remainder);
           currentQuizQuestions.addAll(questions);
         }
+        final Home home = await fetchHome(id);
+        final List<Final> finals = await fetchFinals(id, versionId);
         Quiz currentQuiz = Quiz(
           questions: currentQuizQuestions,
-          results: [],
+          results: finals,
           start: home,
           home: home,
         );

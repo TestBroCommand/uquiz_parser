@@ -1,3 +1,6 @@
+import 'package:html/dom.dart' as dom;
+import 'package:html/parser.dart' as html_parser;
+
 class Home {
   final String name;
   final String description;
@@ -18,21 +21,44 @@ class Home {
     );
   }
   static String _extractName(String html) {
-    final regExp = RegExp(r'<meta property="og:title" content="([^"]+)">');
-    final match = regExp.firstMatch(html);
-    return match!.group(1)!.trim();
+    dom.Document document = html_parser.parse(html);
+
+    dom.Element? ogTitleMeta =
+        document.querySelector('meta[property="og:title"]');
+
+    if (ogTitleMeta != null) {
+      String? ogTitle = ogTitleMeta.attributes['content'];
+      return ogTitle ?? 'og:title content not found';
+    } else {
+      return 'og:title meta tag not found';
+    }
   }
 
   static String _extractImageUrl(String html) {
-    final regExp = RegExp(r'<meta name="og:image" content="([^"]+)">');
-    final match = regExp.firstMatch(html);
-    return match!.group(1)!.trim();
+    print(html);
+    dom.Document document = html_parser.parse(html);
+
+    dom.Element? ogImg = document.querySelector('meta[name="twitter:image"]');
+
+    if (ogImg != null) {
+      String? ogTitle = ogImg.attributes['content'];
+      return ogTitle ?? 'og:img content not found';
+    } else {
+      return 'og:img meta tag not found';
+    }
   }
 
   static String _extractDescription(String html) {
-    final regExp =
-        RegExp(r'<meta property="og:description" content="([^"]+)">');
-    final match = regExp.firstMatch(html);
-    return match!.group(1)!.trim();
+    dom.Document document = html_parser.parse(html);
+
+    dom.Element? ogDescMeta =
+        document.querySelector('meta[property="og:description"]');
+
+    if (ogDescMeta != null) {
+      String? ogDesc = ogDescMeta.attributes['content'];
+      return ogDesc ?? 'og:description content not found';
+    } else {
+      return 'og:description meta tag not found';
+    }
   }
 }
