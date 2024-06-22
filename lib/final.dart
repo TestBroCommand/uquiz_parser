@@ -5,22 +5,42 @@ class Final {
   final String name;
   final String description;
   final String imageUrl;
+  final String digit;
   Final({
     required this.name,
     required this.description,
     required this.imageUrl,
+    required this.digit,
   });
 
   factory Final.fromJson(String html) {
     final name = _extractName(html);
     final imageUrl = _extractImageUrl(html);
     final description = _extractDescription(html);
+    final digit = _extractDigit(html);
     return Final(
       description: description,
+      digit: digit,
       name: name,
       imageUrl: imageUrl,
     );
   }
+
+  static String _extractDigit(String html) {
+    dom.Document document = html_parser.parse(html);
+
+    dom.Element? descriptionElement =
+        document.querySelector('div[data-personality-id]');
+
+    if (descriptionElement != null) {
+      String description =
+          descriptionElement.attributes['data-personality-id']!;
+      return description;
+    } else {
+      return 'og:desc meta personality not found';
+    }
+  }
+
   static String _extractImageUrl(String html) {
     dom.Document document = html_parser.parse(html);
 

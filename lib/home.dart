@@ -35,7 +35,6 @@ class Home {
   }
 
   static String _extractImageUrl(String html) {
-    print(html);
     dom.Document document = html_parser.parse(html);
 
     dom.Element? ogImg = document.querySelector('meta[name="twitter:image"]');

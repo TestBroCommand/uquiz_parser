@@ -1,11 +1,12 @@
 class Question {
   final int questionNumber;
   final String questionText;
-  // final String? questionImage;
   final List<String> answers;
+  final List<String> answersIds;
 
   Question(
       {required this.questionNumber,
+      required this.answersIds,
       // required this.questionImage,
       required this.questionText,
       required this.answers});
@@ -18,12 +19,26 @@ class Question {
     final questionText = _extractQuestionText(questionHtml);
     // final questionImage = _downloadImage(questionHtml);
     final answers = _extractAnswers(questionHtml);
+    final answersIds = _extractId(questionHtml)
+        .sublist(0, _extractId(questionHtml).length - 1);
     return Question(
+      answersIds: answersIds,
       questionNumber: questionNumber,
       //   questionImage: questionImage,
       questionText: questionText,
       answers: answers,
     );
+  }
+
+  static List<String> _extractId(String html) {
+    final regExp = RegExp(
+      r'<input.*?value="(.*?)"',
+      dotAll: true,
+    );
+    final matches = regExp.allMatches(html);
+    return matches.map((match) {
+      return match.group(1)?.trim() ?? '';
+    }).toList();
   }
 
   static String? _downloadImage(String html) {

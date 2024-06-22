@@ -168,7 +168,7 @@ Future<void> downloadFile(String url) async {
     raf.writeFromSync(response.data);
     await raf.close();
   } catch (e) {
-    print(e);
+    //print(e);
   }
 }
 
