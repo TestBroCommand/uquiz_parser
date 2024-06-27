@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:dio/dio.dart';
 import 'package:pocketbase/pocketbase.dart';
 import 'package:uquiz_parser/final.dart';
 import 'package:uquiz_parser/question.dart';
@@ -8,13 +9,13 @@ import 'package:uquiz_parser/uquiz_parser.dart' as uquiz_parser;
 import 'package:uquiz_parser/uquiz_parser.dart';
 import 'package:xml/xml.dart';
 
+
 final pb = PocketBase('https://pb-dev.testbroapp.ru');
-List quizList = [
-  "любовь",
-];
+List quizList = ["Машина"];
 /*
 
   "боль",
+  "любовь",
     "кинны",
   "аура",
   "расставания",
@@ -53,7 +54,7 @@ void main(List<String> arguments) async {
   await pb.admins.authWithPassword('uohucku3ne@mail.authpass.app',
       "'PIGwYyX@VDw)rM~7feT)VG\$pntQTrhwkLq432ad");
   for (var tag in quizList) {
-    List<String> urls = [];
+    Set<String> urls = {};
     for (int i = 0; i < 15; i++) {
       final yandexResponse = await dio.get(
           "https://yandex.ru/search/xml?folderid=b1gono9ktmuo5f4r8kk7&apikey=AQVN1rMGe0p4Qxde3twAxtzxELRv0Vn_XXMrMmQ-&query=site:uquiz.com/quiz_$tag&page=$i");
@@ -67,7 +68,7 @@ void main(List<String> arguments) async {
       }).toList());
     }
     print(urls);
-    List<String> idss = await sendToPocketbase(urls);
+    List<String> idss = await sendToPocketbase(urls.toList());
     await pb
         .collection('tags_uquiz')
         .create(body: {"name": tag, "quizes": idss});

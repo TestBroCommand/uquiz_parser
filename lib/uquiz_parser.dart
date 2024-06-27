@@ -5,6 +5,7 @@ import 'package:uquiz_parser/final.dart';
 import 'package:uquiz_parser/home.dart';
 import 'package:uquiz_parser/question.dart';
 import 'package:uquiz_parser/quiz.dart';
+import 'package:uquiz_parser/uquiz_parser.dart';
 
 final dio = Dio();
 Future<List<String>> getIds() async {
@@ -13,8 +14,11 @@ Future<List<String>> getIds() async {
   return result;
 }
 
+Response? scSite;
 Future<List<Question>> fetchQuestions(
     dynamic quizId, int versionId, int start, int count) async {
+  scSite =
+      await Dio().get('https://uquiz.com/static/Quiz/sc/$quizId/$versionId');
   List<Question> questions = [];
   Dio dio = Dio();
 
@@ -86,7 +90,7 @@ Future<List<Final>> fetchFinals(String quizId, dynamic versionId) async {
 
     for (var personalityTypeId in uniquePersonalityTypeIds) {
       Response finalResponse = await dio.get(
-          'https://uquiz.com/Result/static/lite/nAaEe0/$versionId/personality/$personalityTypeId');
+          'https://uquiz.com/Result/static/lite/$quizId/$versionId/personality/$personalityTypeId');
 
       if (finalResponse.statusCode == 200) {
         final finalData = finalResponse.data;

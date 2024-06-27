@@ -1,3 +1,8 @@
+import 'dart:convert';
+
+import 'package:dio/dio.dart';
+import 'package:uquiz_parser/uquiz_parser.dart';
+
 class Question {
   final int questionNumber;
   final String questionText;
@@ -31,14 +36,33 @@ class Question {
   }
 
   static List<String> _extractId(String html) {
-    final regExp = RegExp(
-      r'<input.*?value="(.*?)"',
-      dotAll: true,
-    );
-    final matches = regExp.allMatches(html);
-    return matches.map((match) {
-      return match.group(1)?.trim() ?? '';
-    }).toList();
+    
+    if (scSite!.statusCode == 200) {
+      final quizData = scSite!.data;
+      var jsonData = json.decode(quizData);
+
+      List<String> personalityTypeIds = [];
+
+      for (var question in jsonData['ScoreCardQuestions']) {
+        for (var answer in question['PersonalityAnswers']) {
+          for (var typeId in answer['PersonalityTypeIds']) {
+            print(typeId);
+            personalityTypeIds.add(typeId.toString());
+          }
+        }
+      }
+      return personalityTypeIds;
+      /*  final regExp = RegExp(
+        r'<input.*?value="(.*?)"',
+        dotAll: true,
+      );
+      final matches = regExp.allMatches(html);
+       return matches.map((match) {
+        return match.group(1)?.trim() ?? '';
+      }).toList();
+      */
+    }
+    return [];
   }
 
   static String? _downloadImage(String html) {
